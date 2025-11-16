@@ -12,7 +12,11 @@ def getitem(v,k):
     0
     """
     assert k in v.D
-    pass
+    if k in v.f:
+        return v.f[k]
+    else:
+        return 0
+    
 
 def setitem(v,k,val):
     """
@@ -32,7 +36,7 @@ def setitem(v,k,val):
     0
     """
     assert k in v.D
-    pass
+    v.f[k] = val
 
 def equal(u,v):
     """
@@ -68,7 +72,21 @@ def equal(u,v):
     False
     """
     assert u.D == v.D
-    pass
+    eq = True
+    for key, value in u.f.items():
+        if getitem(u,key) == getitem(v, key):
+            continue
+            
+        eq = False
+        break
+    
+    for key, value in v.f.items():
+        if getitem(u,key) == getitem(v, key):
+            continue
+        eq = False
+        break
+
+    return eq
 
 def add(u,v):
     """
@@ -105,7 +123,18 @@ def add(u,v):
     True
     """
     assert u.D == v.D
-    pass
+    add_labels = set()
+    for key in u.D:
+        add_labels.add(key)
+    for key in v.D:
+        add_labels.add(key)
+
+    add_func = {}
+    for key in add_labels:
+        add_func[key] = getitem(u, key) + getitem(v, key)
+
+    return Vec(add_labels, add_func)
+
 
 def dot(u,v):
     """
@@ -139,7 +168,12 @@ def dot(u,v):
     12
     """
     assert u.D == v.D
-    pass
+    dot_accum = 0
+    domain = u.D | v.D
+    for key in domain:
+        dot_accum += (getitem(u, key) * getitem(v, key))
+
+    return dot_accum
 
 def scalar_mul(v, alpha):
     """
@@ -159,7 +193,15 @@ def scalar_mul(v, alpha):
     >>> u == Vec({'x','y','z','w'},{'x':1,'y':2,'z':3,'w':4})
     True
     """
-    pass
+    
+    scalar_domain = set()
+    scalar_domain = scalar_domain | v.D
+    scalar_func = {}
+    u = Vec(scalar_domain, scalar_func)
+    for key in scalar_domain:
+        setitem(u, key, getitem(v, key) * alpha)
+
+    return u
 
 def neg(v):
     """
@@ -176,7 +218,13 @@ def neg(v):
     >>> -Vec({'a','b','c'}, {'a':1}) == Vec({'a','b','c'}, {'a':-1})
     True
     """
-    pass
+    neg_domain = set()
+    neg_domain = neg_domain | v.D
+    neg_func = {}
+    for key in neg_domain:
+        neg_func[key] = getitem(v, key) * -1
+
+    return Vec(neg_domain, neg_func)
 
 ###############################################################################################################################
 
