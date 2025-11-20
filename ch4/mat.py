@@ -13,7 +13,9 @@ def getitem(M, k):
     0
     """
     assert k[0] in M.D[0] and k[1] in M.D[1]
-    pass
+
+    return M.f[k] if k in M.f else 0
+    
 
 def equal(A, B):
     """
@@ -39,7 +41,18 @@ def equal(A, B):
     True
     """
     assert A.D == B.D
-    pass
+    for i in A.D[0]:
+        for j in A.D[1]:
+            if A[i,j] != B[i,j]:
+                return False
+            
+    for i in B.D[0]:
+        for j in B.D[1]:
+            if B[i,j] != A[i,j]:
+                return False
+
+    return True
+
 
 def setitem(M, k, val):
     """
@@ -59,7 +72,7 @@ def setitem(M, k, val):
     True
     """
     assert k[0] in M.D[0] and k[1] in M.D[1]
-    pass
+    M.f[k] = val
 
 def add(A, B):
     """
@@ -86,8 +99,15 @@ def add(A, B):
     >>> C1 + C2 == D
     True
     """
+
+    C = Mat(A.D, {})
+
     assert A.D == B.D
-    pass
+    for i in A.D[0]:
+        for j in A.D[1]:
+            C[i,j] = A[i,j] + B[i,j]
+
+    return C
 
 def scalar_mul(M, x):
     """
@@ -101,7 +121,13 @@ def scalar_mul(M, x):
     >>> 0.25*M == Mat(({1,3,5}, {2,4}), {(1,2):1.0, (5,4):0.5, (3,4):0.75})
     True
     """
-    pass
+    
+    N = Mat(M.D, {})
+    for i in M.D[0]:
+        for j in M.D[1]:
+            N[i,j] = M[i,j] * x
+
+    return N
 
 def transpose(M):
     """
@@ -115,7 +141,13 @@ def transpose(M):
     >>> M.transpose() == Mt
     True
     """
-    pass
+    Mt = Mat((M.D[1], M.D[0]), {})
+
+    for i in M.D[0]:
+        for j in M.D[1]:
+            Mt[j,i] = M[i,j]
+
+    return Mt
 
 def vector_matrix_mul(v, M):
     """
@@ -142,7 +174,16 @@ def vector_matrix_mul(v, M):
     True
     """
     assert M.D[0] == v.D
-    pass
+    vM = Vec(M.D[1], {})
+
+    for i in vM.D:
+        accum = 0
+        for j in M.D[0]:
+            accum += (v[j] * M[j,i])
+        vM[i] = accum
+
+    return vM
+
 
 def matrix_vector_mul(M, v):
     """
@@ -169,7 +210,16 @@ def matrix_vector_mul(M, v):
     True
     """
     assert M.D[1] == v.D
-    pass
+    Mv = Vec(M.D[0], {})
+
+    for i in Mv.D:
+        accum = 0
+        for j in M.D[1]:
+            accum += (v[j] * M[i,j])
+        Mv[i] = accum
+    
+    return Mv
+
 
 def matrix_matrix_mul(A, B):
     """
@@ -198,7 +248,18 @@ def matrix_matrix_mul(A, B):
     True
     """
     assert A.D[1] == B.D[0]
-    pass
+
+    AB = Mat((A.D[0], B.D[1]), {})
+
+    for i in AB.D[0]:
+        for j in AB.D[1]:
+            accum = 0
+            for k in A.D[1]:
+                accum += (A[i,k] * B[k,j])
+            AB[i,j] = accum
+
+    return AB
+    
 
 ################################################################################
 
@@ -229,7 +290,9 @@ class Mat:
     def __rmul__(self, other):
         if Vec == type(other):
             return vector_matrix_mul(other, self)
-        else:  # Assume scalar
+        elif Mat == type(other):
+            return matrix_matrix_mul(other, self)
+        else:
             return scalar_mul(self, other)
 
     __add__ = add
